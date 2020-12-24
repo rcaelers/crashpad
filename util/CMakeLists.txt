@@ -432,6 +432,8 @@ endif()
 
 target_include_directories(crashpad_util PRIVATE
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
+    PUBLIC
+    $<INSTALL_INTERFACE:include/crashpad/>
 )
 target_link_libraries(crashpad_util
     PRIVATE
