@@ -37,3 +37,6 @@
 /third_party/gyp/gyp
 /xcodebuild
 tags
+_build
+_deploy
+
