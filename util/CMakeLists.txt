@@ -399,6 +399,8 @@ endif()
 
 target_include_directories(crashpad_util PRIVATE
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
+    PUBLIC
+    $<INSTALL_INTERFACE:include/crashpad/>
 )
 target_link_libraries(crashpad_util
     PRIVATE
@@ -465,3 +467,7 @@ set_property(TARGET crashpad_util PROPERTY EXPORT_NAME util)
 add_library(crashpad::util ALIAS crashpad_util)
 
 crashpad_install_target(crashpad_util)
+crashpad_install_dev(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/crashpad/util"
+    FILES_MATCHING PATTERN "*.h"
+)
