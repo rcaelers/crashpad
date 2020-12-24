@@ -70,7 +70,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     )
 endif()
 
-set_property(TARGET crashpad_handler_lib PROPERTY EXPORT_NAME handler)
+set_property(TARGET crashpad_handler_lib PROPERTY EXPORT_NAME handler_lib)
 add_library(crashpad::handler_lib ALIAS crashpad_handler_lib)
 
 crashpad_install_target(crashpad_handler_lib)
