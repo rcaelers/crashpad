@@ -64,7 +64,8 @@ jobs:
           export MINGW_ROOT=/c/msys64
           cmake -GNinja -B_build -H. -DCMAKE_TOOLCHAIN_FILE=toolchains/msys2.cmake -DCMAKE_INSTALL_PREFIX=_deploy
           ninja -C _build -v install
-          /usr/bin/tar cvfJ crashpad-mingw64-`date +"%Y%m%d"`-${GITHUB_RUN_NUMBER}-${GITHUB_SHA}.tar.xz -C _deploy --transform 's,^./,name/,' .
+          export name=crashpad-mingw64-`date +"%Y%m%d"`-${GITHUB_RUN_NUMBER}-${GITHUB_SHA}
+          /usr/bin/tar cvfJ ${name}.tar.xz -C _deploy --transform "s,^./,${name}/," .
 
       - name: Upload artifacts to MinIO
         run: |
