@@ -84,7 +84,7 @@ void PrepareForUTF8Output(const CHAR* src,
 }
 
 template void PrepareForUTF8Output(const wchar_t*, size_t, std::string*);
-// template void PrepareForUTF8Output(const char16_t*, size_t, std::string*);
+template void PrepareForUTF8Output(const char16_t*, size_t, std::string*);
 
 template<typename STRING>
 void PrepareForUTF16Or32Output(const char* src,
