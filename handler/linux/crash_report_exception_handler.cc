@@ -105,14 +105,16 @@ CrashReportExceptionHandler::CrashReportExceptionHandler(
     const std::vector<base::FilePath>* attachments,
     bool write_minidump_to_database,
     bool write_minidump_to_log,
-    const UserStreamDataSources* user_stream_data_sources)
+    const UserStreamDataSources* user_stream_data_sources,
+    UserHook* user_hook)
     : database_(database),
       upload_thread_(upload_thread),
       process_annotations_(process_annotations),
       attachments_(attachments),
       write_minidump_to_database_(write_minidump_to_database),
       write_minidump_to_log_(write_minidump_to_log),
-      user_stream_data_sources_(user_stream_data_sources) {
+      user_stream_data_sources_(user_stream_data_sources),
+      user_hook_(user_hook) {
   DCHECK(write_minidump_to_database_ | write_minidump_to_log_);
 }
 
@@ -259,6 +261,19 @@ bool CrashReportExceptionHandler::WriteMinidumpToDatabase(
     }
 
     CopyFileContent(&file_reader, file_writer);
+  }
+
+  bool consent = user_hook_->reportCrash("");
+  if (consent) {
+    std::string user_text = user_hook_->getUserText();
+    if (user_text.size() > 0) {
+      FileWriter* file_writer = new_report->AddAttachment("user-text");
+      if (file_writer == nullptr) {
+        LOG(ERROR) << "user text couldn't be created, skipping";
+      } else {
+        file_writer->Write(user_text.data(), user_text.size());
+      }
+    }
   }
 
   UUID uuid;

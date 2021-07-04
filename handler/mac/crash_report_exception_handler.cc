@@ -48,12 +48,14 @@ CrashReportExceptionHandler::CrashReportExceptionHandler(
     CrashReportUploadThread* upload_thread,
     const std::map<std::string, std::string>* process_annotations,
     const std::vector<base::FilePath>* attachments,
-    const UserStreamDataSources* user_stream_data_sources)
+    const UserStreamDataSources* user_stream_data_sources,
+    UserHook* user_hook)
     : database_(database),
       upload_thread_(upload_thread),
       process_annotations_(process_annotations),
       attachments_(attachments),
-      user_stream_data_sources_(user_stream_data_sources) {}
+      user_stream_data_sources_(user_stream_data_sources),
+      user_hook_(user_hook) {}
 
 CrashReportExceptionHandler::~CrashReportExceptionHandler() {
 }
@@ -199,6 +201,19 @@ kern_return_t CrashReportExceptionHandler::CatchMachException(
       }
 
       CopyFileContent(&file_reader, file_writer);
+    }
+
+    bool consent = user_hook_->reportCrash("");
+    if (consent) {
+      std::string user_text = user_hook_->getUserText();
+      if (user_text.size() > 0) {
+        FileWriter* file_writer = new_report->AddAttachment("user-text");
+        if (file_writer == nullptr) {
+          LOG(ERROR) << "user text couldn't be created, skipping";
+        } else {
+          file_writer->Write(user_text.data(), user_text.size());
+        }
+      }
     }
 
     UUID uuid;
