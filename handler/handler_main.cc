@@ -523,7 +523,8 @@ void InitCrashpadLogging() {
 
 int HandlerMain(int argc,
                 char* argv[],
-                const UserStreamDataSources* user_stream_sources) {
+                const UserStreamDataSources* user_stream_sources,
+                UserHook* user_hook) {
   InitCrashpadLogging();
 
   InstallCrashHandler();
@@ -1034,7 +1035,8 @@ int HandlerMain(int argc,
       true,
       false,
 #endif  // OS_LINUX
-      user_stream_sources);
+      user_stream_sources,
+      user_hook);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)

@@ -17,6 +17,7 @@
 
 #include "build/build_config.h"
 #include "handler/user_stream_data_source.h"
+#include "handler/user_hook.h"
 
 namespace crashpad {
 
@@ -33,7 +34,8 @@ namespace crashpad {
 //!     to the minidump.
 int HandlerMain(int argc,
                 char* argv[],
-                const UserStreamDataSources* user_stream_sources);
+                const UserStreamDataSources* user_stream_sources,
+                UserHook* hook = NULL);
 
 #if defined(OS_ANDROID)
 //! \brief The `main()` entry point for Android libraries.

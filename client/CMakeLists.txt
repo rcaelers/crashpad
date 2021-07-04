@@ -57,6 +57,7 @@ target_include_directories(crashpad_client INTERFACE
     "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>"
     "$<INSTALL_INTERFACE:include/crashpad/>"
 )
+
 target_link_libraries(crashpad_client
     PRIVATE
         $<BUILD_INTERFACE:crashpad_interface>

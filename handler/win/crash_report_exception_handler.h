@@ -22,6 +22,7 @@
 
 #include "base/macros.h"
 #include "handler/user_stream_data_source.h"
+#include "handler/user_hook.h"
 #include "util/win/exception_handler_server.h"
 
 namespace crashpad {
@@ -56,12 +57,15 @@ class CrashReportExceptionHandler final
   //!     crash reports. For each crash report that is written, the data sources
   //!     are called in turn. These data sources may contribute additional
   //!     minidump streams. `nullptr` if not required.
-  CrashReportExceptionHandler(
+  //! \param[in] user_hook Hook that allows for interaction with the user before
+  //!     submitting the crash report. `nullptr` if not required.
+CrashReportExceptionHandler(
       CrashReportDatabase* database,
       CrashReportUploadThread* upload_thread,
       const std::map<std::string, std::string>* process_annotations,
       const std::vector<base::FilePath>* attachments,
-      const UserStreamDataSources* user_stream_data_sources);
+      const UserStreamDataSources* user_stream_data_sources,
+      UserHook* user_hook);
 
   ~CrashReportExceptionHandler();
 
@@ -81,6 +85,7 @@ class CrashReportExceptionHandler final
   const std::map<std::string, std::string>* process_annotations_;  // weak
   const std::vector<base::FilePath>* attachments_;  // weak
   const UserStreamDataSources* user_stream_data_sources_;  // weak
+  UserHook* user_hook_; // weak
 
   DISALLOW_COPY_AND_ASSIGN(CrashReportExceptionHandler);
 };

@@ -62,6 +62,11 @@ target_link_libraries(crashpad_handler_lib
         mini_chromium
 )
 
+target_include_directories(crashpad_handler_lib INTERFACE
+    "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>"
+    "$<INSTALL_INTERFACE:include/crashpad/>"
+)
+
 if(WIN32)
     if(MSVC)
         target_compile_options(crashpad_handler_lib PRIVATE "/wd4201")

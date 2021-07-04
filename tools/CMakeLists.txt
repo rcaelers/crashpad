@@ -2,6 +2,12 @@ add_library(crashpad_tools STATIC
     tool_support.cc
     tool_support.h
 )
+
+target_include_directories(crashpad_tools INTERFACE
+    "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>"
+    "$<INSTALL_INTERFACE:include/crashpad/>"
+)
+
 target_link_libraries(crashpad_tools PRIVATE
     $<BUILD_INTERFACE:crashpad_interface>
 )
@@ -10,6 +16,9 @@ set_property(TARGET crashpad_tools PROPERTY EXPORT_NAME tools)
 add_library(crashpad::tools ALIAS crashpad_tools)
 
 crashpad_install_target(crashpad_tools)
+crashpad_install_dev(FILES tool_support.h
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/crashpad/tools"
+)
 
 if(CRASHPAD_BUILD_TOOLS)
     add_executable(crashpad_database_util
