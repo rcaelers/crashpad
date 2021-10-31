@@ -74,7 +74,7 @@ jobs:
         run: |
           mkdir _build _deploy
           export MINGW_ROOT=/c/msys64
-          cmake -GNinja -B_build -H. -DCMAKE_TOOLCHAIN_FILE=toolchains/msys2.cmake -DCMAKE_INSTALL_PREFIX=_deploy
+          cmake -GNinja -B_build -H. -DCMAKE_TOOLCHAIN_FILE=toolchains/msys2.cmake -DCMAKE_INSTALL_PREFIX=_deploy -D CRASHPAD_ENABLE_STACKTRACE=ON
           ninja -C _build -v install
           export name=crashpad-mingw64-`date +"%Y%m%d"`-${GITHUB_RUN_NUMBER}-${GITHUB_SHA}
           /usr/bin/tar cvfJ ${name}.tar.xz -C _deploy --transform "s,^./,${name}/," .
