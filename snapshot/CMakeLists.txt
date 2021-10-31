@@ -46,7 +46,6 @@ add_library(crashpad_snapshot STATIC
     unloaded_module_snapshot.h
 )
 
-
 if(APPLE AND NOT IOS)
     target_sources(crashpad_snapshot PRIVATE
         posix/timezone.cc
@@ -201,8 +200,15 @@ target_link_libraries(crashpad_snapshot
         mini_chromium
 )
 
+if(CRASHPAD_ENABLE_STACKTRACE)
+    target_compile_definitions(crashpad_snapshot PRIVATE CLIENT_STACKTRACES_ENABLED)
+endif()
+
 if(WIN32)
     target_link_libraries(crashpad_snapshot PRIVATE powrprof)
+    if(CRASHPAD_ENABLE_STACKTRACE)
+        target_link_libraries(crashpad_snapshot PRIVATE dbghelp)
+    endif()
     if(MSVC)
         target_compile_options(crashpad_snapshot PRIVATE "/wd4201")
     endif()
@@ -215,6 +221,17 @@ if(WIN32)
             "-Wno-unknown-attributes"
         )
     endif()
+endif()
+
+if(APPLE AND NOT IOS AND CRASHPAD_ENABLE_STACKTRACE)
+    target_include_directories(crashpad_snapshot PRIVATE ../libunwind/include)
+    target_link_libraries(crashpad_snapshot PRIVATE unwind_static)
+endif()
+
+if(LINUX AND CRASHPAD_ENABLE_STACKTRACE)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(UNWIND REQUIRED IMPORTED_TARGET libunwind-ptrace)
+    target_link_libraries(crashpad_snapshot PRIVATE PkgConfig::UNWIND)
 endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
