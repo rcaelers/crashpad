@@ -69,6 +69,7 @@ target_include_directories(crashpad_handler_lib INTERFACE
 
 if(WIN32)
     if(MSVC)
+        target_link_libraries(crashpad_handler_lib PUBLIC crashpad_getopt)
         target_compile_options(crashpad_handler_lib PRIVATE "/wd4201")
     endif()
 endif()

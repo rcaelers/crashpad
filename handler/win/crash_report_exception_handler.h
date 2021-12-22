@@ -20,7 +20,6 @@
 #include <map>
 #include <string>
 
-#include "base/macros.h"
 #include "handler/user_stream_data_source.h"
 #include "handler/user_hook.h"
 #include "util/win/exception_handler_server.h"
@@ -67,6 +66,10 @@ CrashReportExceptionHandler(
       const UserStreamDataSources* user_stream_data_sources,
       UserHook* user_hook);
 
+  CrashReportExceptionHandler(const CrashReportExceptionHandler&) = delete;
+  CrashReportExceptionHandler& operator=(const CrashReportExceptionHandler&) =
+      delete;
+
   ~CrashReportExceptionHandler();
 
   // ExceptionHandlerServer::Delegate:
@@ -86,8 +89,6 @@ CrashReportExceptionHandler(
   const std::vector<base::FilePath>* attachments_;  // weak
   const UserStreamDataSources* user_stream_data_sources_;  // weak
   UserHook* user_hook_; // weak
-
-  DISALLOW_COPY_AND_ASSIGN(CrashReportExceptionHandler);
 };
 
 }  // namespace crashpad
