@@ -260,15 +260,19 @@ bool CrashReportExceptionHandler::WriteMinidumpToDatabase(
     CopyFileContent(&file_reader, file_writer);
   }
 
-  bool consent = user_hook_->reportCrash(*process_annotations_, *attachments_);
-  if (consent) {
-    std::string user_text = user_hook_->getUserText();
-    if (user_text.size() > 0) {
-      FileWriter* file_writer = new_report->AddAttachment("user-text");
-      if (file_writer == nullptr) {
-        LOG(ERROR) << "user text couldn't be created, skipping";
-      } else {
-        file_writer->Write(user_text.data(), user_text.size());
+  bool consent = true;
+  
+  if (user_hook_ != nullptr) {
+    consent = user_hook_->requestUserConsent(*process_annotations_, *attachments_);
+    if (consent) {
+      std::string user_text = user_hook_->getUserText();
+      if (user_text.size() > 0) {
+        FileWriter* file_writer = new_report->AddAttachment("user-text");
+        if (file_writer == nullptr) {
+          LOG(ERROR) << "user text couldn't be created, skipping";
+        } else {
+          file_writer->Write(user_text.data(), user_text.size());
+        }
       }
     }
   }
@@ -287,6 +291,10 @@ bool CrashReportExceptionHandler::WriteMinidumpToDatabase(
     database_->SkipReportUpload(uuid, Metrics::CrashSkippedReason::kUploadsDisabled);
   } else  if (upload_thread_) {
     upload_thread_->ReportPending(uuid);
+  }
+
+  if (user_hook_ != nullptr) {
+    user_hook_->reportCompleted(uuid);
   }
 
   if (local_report_id != nullptr) {

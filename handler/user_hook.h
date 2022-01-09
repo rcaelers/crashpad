@@ -20,6 +20,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "util/misc/uuid.h"
 
 namespace crashpad {
 
@@ -50,17 +51,25 @@ class UserHook {
   //!
   //! \return \c true if the user consents to submitting a report,
   //!     \c false otherwise
-  virtual bool reportCrash(const std::map<std::string, std::string> &annotations,
-                           const std::vector<base::FilePath> &attachments) = 0;
+  virtual bool requestUserConsent(const std::map<std::string, std::string> &annotations,
+                                  const std::vector<base::FilePath> &attachments) = 0;
 
-  //! \brief Interact with the user before submitting the crash report
+  //! \brief Retrieve user provided text
   //!
-  //! Called after \a process_snapshot has been initialized for the crashed
-  //! process to (optionally) produce the contents of a user extension stream
-  //! that will be attached to the minidump.
+  //! Called after \a requestUserConsent has been called to retrieve user provided text
+  //! that will be added as attachment to the user report
   //!
   //! \return Text provided by the user to describe the crash
   virtual std::string getUserText() = 0;
+
+  //! \brief Report crash UUID
+  //!
+  //! \param[in] uuid UUID of the created crash report.
+  //!
+  //! Called after \a requestUserConsent has been called to report back the UUID of
+  //! the crash report.
+  //!
+  virtual void reportCompleted(const UUID &uuid) = 0;
 };
 
 }  // namespace crashpad
