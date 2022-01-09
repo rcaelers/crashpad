@@ -16,6 +16,10 @@
 #define CRASHPAD_HANDLER_USER_HOOK_H_
 
 #include <string>
+#include <map>
+#include <vector>
+
+#include "base/files/file_path.h"
 
 namespace crashpad {
 
@@ -31,12 +35,23 @@ class UserHook {
   //! process to (optionally) produce the contents of a user extension stream
   //! that will be attached to the minidump.
   //!
-  //! \param[in] info Human readable information on the crash that can be 
-  //!     reported to the user.
+  //! \param[in] annotations A map of annotations to insert as
+  //!     process-level annotations into each crash report that is written. Do
+  //!     not confuse this with module-level annotations, which are under the
+  //!     control of the crashing process, and are used to implement Chrome's
+  //!     "crash keys." Process-level annotations are those that are beyond the
+  //!     control of the crashing process, which must reliably be set even if
+  //!     the process crashes before it's able to establish its own annotations.
+  //!     To interoperate with Breakpad servers, the recommended practice is to
+  //!     specify values for the `"prod"` and `"ver"` keys as process
+  //!     annotations.
+  //! \param[in] attachments A vector of file paths that should be captured with
+  //!     each report at the time of the crash.
   //!
   //! \return \c true if the user consents to submitting a report,
   //!     \c false otherwise
-  virtual bool reportCrash(const std::string &info) = 0;
+  virtual bool reportCrash(const std::map<std::string, std::string> &annotations,
+                           const std::vector<base::FilePath> &attachments) = 0;
 
   //! \brief Interact with the user before submitting the crash report
   //!

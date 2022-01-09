@@ -198,7 +198,7 @@ kern_return_t CrashReportExceptionHandler::CatchMachException(
       CopyFileContent(&file_reader, file_writer);
     }
 
-    bool consent = user_hook_->reportCrash("");
+    bool consent = user_hook_->reportCrash(*process_annotations_, *attachments_);
     if (consent) {
       std::string user_text = user_hook_->getUserText();
       if (user_text.size() > 0) {
@@ -220,7 +220,9 @@ kern_return_t CrashReportExceptionHandler::CatchMachException(
       return KERN_FAILURE;
     }
 
-    if (upload_thread_) {
+    if (!consent) {
+      database_->SkipReportUpload(uuid, Metrics::CrashSkippedReason::kUploadsDisabled);
+    } else  if (upload_thread_) {
       upload_thread_->ReportPending(uuid);
     }
   }
