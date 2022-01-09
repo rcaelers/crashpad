@@ -229,10 +229,10 @@ kern_return_t CrashReportExceptionHandler::CatchMachException(
     } else  if (upload_thread_) {
       upload_thread_->ReportPending(uuid);
     }
-  }
 
-  if (user_hook_ != nullptr) {
-    user_hook_->reportCompleted(uuid);
+    if (user_hook_ != nullptr) {
+      user_hook_->reportCompleted(uuid);
+    }
   }
 
   if (client_options.system_crash_reporter_forwarding != TriState::kDisabled &&
