@@ -311,7 +311,7 @@ CrashReportUploadThread::UploadResult CrashReportUploadThread::UploadReport(
   }
   http_transport->SetBodyStream(http_multipart_builder.GetBodyStream());
   // TODO(mark): The timeout should be configurable by the client.
-  http_transport->SetTimeout(60.0);  // 1 minute.
+  http_transport->SetTimeout(internal::kUploadReportTimeoutSeconds);
 
   std::string url = url_;
   if (options_.identify_client_via_url) {
