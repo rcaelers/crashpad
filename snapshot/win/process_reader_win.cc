@@ -35,6 +35,10 @@
 #include "util/win/scoped_handle.h"
 #include "util/win/scoped_local_alloc.h"
 
+#if defined(__MINGW32__) || defined(__MINGW64__)
+extern "C" WINBASEAPI HRESULT WINAPI GetThreadDescription(HANDLE,PWSTR *);
+#endif
+
 namespace crashpad {
 
 namespace {
