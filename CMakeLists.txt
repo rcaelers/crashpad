@@ -119,6 +119,7 @@ elseif(MINGW)
     # redirect to wmain
     # FIXME: cmake 3.13 added target_link_options
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -municode")
+    add_compile_definitions(_WIN32_WINNT=_WIN32_WINNT_WIN10 NTDDI_VERSION=NTDDI_WIN10_RS5)
 endif()
 add_library(crashpad::interface ALIAS crashpad_interface)
 
