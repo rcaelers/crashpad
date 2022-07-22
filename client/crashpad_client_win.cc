@@ -16,7 +16,9 @@
 
 #include <windows.h>
 
+#if !defined(__MINGW32__) && !defined(__MINGW64__)
 #include <werapi.h>
+#endif
 
 #include <signal.h>
 #include <stdint.h>
@@ -773,6 +775,7 @@ bool CrashpadClient::WaitForHandlerStart(unsigned int timeout_ms) {
 }
 
 bool CrashpadClient::RegisterWerModule(const std::wstring& path) {
+#if !defined(__MINGW32__) && !defined(__MINGW64__)
   if (g_wer_registration.dump_completed == INVALID_HANDLE_VALUE ||
       g_wer_registration.dump_without_crashing == INVALID_HANDLE_VALUE) {
     LOG(ERROR) << "not connected";
@@ -789,6 +792,9 @@ bool CrashpadClient::RegisterWerModule(const std::wstring& path) {
   HRESULT res =
       WerRegisterRuntimeExceptionModule(path.c_str(), &g_wer_registration);
   return res == S_OK;
+#else
+  return false;
+#endif
 }
 
 // static

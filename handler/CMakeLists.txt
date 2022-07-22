@@ -128,7 +128,7 @@ if(NOT IOS)
     )
 endif()
 
-if(WIN32)
+if(WIN32 AND NOT MINGW)
     add_library(crashpad_wer SHARED
         win/wer/crashpad_wer.cc
         win/wer/crashpad_wer.h
@@ -138,6 +138,11 @@ if(WIN32)
         ../util/win/address_types.h
         ../util/win/registration_protocol_win.h
     )
+
+    if(MINGW)
+        target_link_libraries(crashpad_wer PUBLIC crashpad_compat)
+        target_link_libraries(crashpad_handler PUBLIC crashpad_compat)
+    endif()
 
     target_link_libraries(crashpad_wer
         PRIVATE
