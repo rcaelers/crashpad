@@ -123,9 +123,7 @@ if(NOT IOS)
     set_property(TARGET crashpad_handler PROPERTY EXPORT_NAME crashpad_handler)
     add_executable(crashpad::handler ALIAS crashpad_handler)
 
-    install(TARGETS crashpad_handler EXPORT crashpad_export
-        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
-    )
+    crashpad_install_target(crashpad_handler)
 endif()
 
 if(CRASHPAD_WER_ENABLED)
@@ -152,7 +150,5 @@ if(CRASHPAD_WER_ENABLED)
     set_property(TARGET crashpad_wer PROPERTY EXPORT_NAME crashpad_wer)
     add_library(crashpad::wer ALIAS crashpad_wer)
 
-    install(TARGETS crashpad_wer EXPORT crashpad_export
-        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
-    )
+    crashpad_install_target(crashpad_wer)
 endif()
