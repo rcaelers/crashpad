@@ -15,8 +15,8 @@
 #ifndef CRASHPAD_COMPAT_MINGW_WINNT_H_
 #define CRASHPAD_COMPAT_MINGW_WINNT_H_
 
-#include_next <winnt.h>
 #include <minwindef.h>
+#include_next <winnt.h>
 
 // https://msdn.microsoft.com/library/aa373184.aspx: "Note that this structure
 // definition was accidentally omitted from WinNT.h."
@@ -65,6 +65,16 @@ struct PROCESSOR_POWER_INFORMATION {
 
 #ifndef XSTATE_COMPACTION_ENABLE_MASK
 #define XSTATE_COMPACTION_ENABLE_MASK (1ULL << (XSTATE_COMPACTION_ENABLE))
+#include <apisetcconv.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+WINBASEAPI HRESULT WINAPI GetThreadDescription(HANDLE, PWSTR*);
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif  // CRASHPAD_COMPAT_MINGW_WINNT_H_

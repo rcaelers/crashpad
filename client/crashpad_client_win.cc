@@ -333,6 +333,7 @@ struct BackgroundHandlerStartThreadData {
       const base::FilePath& database,
       const base::FilePath& metrics_dir,
       const std::string& url,
+      const std::string& http_proxy,
       const std::map<std::string, std::string>& annotations,
       const std::vector<std::string>& arguments,
       const std::vector<base::FilePath>& attachments,
@@ -342,6 +343,7 @@ struct BackgroundHandlerStartThreadData {
         database(database),
         metrics_dir(metrics_dir),
         url(url),
+        http_proxy(http_proxy),
         annotations(annotations),
         arguments(arguments),
         attachments(attachments),
@@ -352,6 +354,7 @@ struct BackgroundHandlerStartThreadData {
   base::FilePath database;
   base::FilePath metrics_dir;
   std::string url;
+  std::string http_proxy;
   std::map<std::string, std::string> annotations;
   std::vector<std::string> arguments;
   std::vector<base::FilePath> attachments;
@@ -405,6 +408,11 @@ bool StartHandlerProcess(
   if (!data->url.empty()) {
     AppendCommandLineArgument(
         FormatArgumentString("url", base::UTF8ToWide(data->url)),
+        &command_line);
+  }
+  if (!data->http_proxy.empty()) {
+    AppendCommandLineArgument(
+        FormatArgumentString("http-proxy", base::UTF8ToWide(data->http_proxy)),
         &command_line);
   }
   for (const auto& kv : data->annotations) {
@@ -631,6 +639,7 @@ bool CrashpadClient::StartHandler(
     const base::FilePath& database,
     const base::FilePath& metrics_dir,
     const std::string& url,
+    const std::string& http_proxy,
     const std::map<std::string, std::string>& annotations,
     const std::vector<std::string>& arguments,
     bool restartable,
@@ -663,6 +672,7 @@ bool CrashpadClient::StartHandler(
                                                    database,
                                                    metrics_dir,
                                                    url,
+                                                   http_proxy,
                                                    annotations,
                                                    arguments,
                                                    attachments,

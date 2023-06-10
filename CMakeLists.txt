@@ -25,14 +25,6 @@ if(CRASHPAD_ZLIB_SYSTEM)
     find_package(ZLIB REQUIRED)
 endif()
 
-
-if(LINUX OR ANDROID)
-    find_package(OpenSSL)
-    if(OPENSSL_FOUND)
-        set(CRASHPAD_USE_BORINGSSL ON)
-    endif()
-endif()
-
 if (NOT (ANDROID OR FUCHSIA))
     add_compile_definitions(CRASHPAD_FLOCK_ALWAYS_SUPPORTED=1)
 else()
@@ -99,7 +91,7 @@ target_compile_definitions(crashpad_interface INTERFACE
     CRASHPAD_LSS_SOURCE_EMBEDDED
 )
 
-if(MSVC)
+if(WIN32)
     target_compile_definitions(crashpad_interface INTERFACE
         NOMINMAX
         UNICODE
@@ -108,6 +100,11 @@ if(MSVC)
         _HAS_EXCEPTIONS=0
         _UNICODE
     )
+endif()
+if(MSVC)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /utf-8")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /utf-8")
+
     string(REGEX REPLACE "/[Ww][0123]" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
     string(REGEX REPLACE "/[Ww][0123]" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
     target_compile_options(crashpad_interface INTERFACE
@@ -135,7 +132,11 @@ elseif(MINGW)
     # redirect to wmain
     # FIXME: cmake 3.13 added target_link_options
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -municode")
-    add_compile_definitions(_WIN32_WINNT=_WIN32_WINNT_WIN10 NTDDI_VERSION=NTDDI_WIN10_RS5)
+    if(CRASHPAD_WER_ENABLED)
+        message(STATUS "WER support enabled")
+    else()
+        message(STATUS "WER support disabled. Define CRASHPAD_WER_ENABLED = TRUE to enable.")
+    endif()
 endif()
 add_library(crashpad::interface ALIAS crashpad_interface)
 
