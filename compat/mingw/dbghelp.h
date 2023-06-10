@@ -249,26 +249,6 @@ struct __attribute__((packed, aligned(4))) MINIDUMP_MISC_INFO_5
 //! \brief The latest known version of the MINIDUMP_MISC_INFO structure.
 typedef MINIDUMP_MISC_INFO_5 MINIDUMP_MISC_INFO_N;
 
-//! \brief Contains the name of the thread with the given thread ID.
-struct __attribute__((packed, aligned(4))) MINIDUMP_THREAD_NAME {
-  //! \brief The identifier of the thread.
-  uint32_t ThreadId;
-
-  //! \brief RVA64 of a MINIDUMP_STRING containing the name of the thread.
-  RVA64 RvaOfThreadName;
-};
-
-//! \brief Variable-sized struct which contains a list of MINIDUMP_THREAD_NAME
-//! structs.
-struct __attribute__((packed, aligned(4))) MINIDUMP_THREAD_NAME_LIST {
-  //! \brief The number of MINIDUMP_THREAD_NAME structs following this field.
-  uint32_t NumberOfThreadNames;
-
-  //! \brief A variably-sized array containing zero or more
-  //!    MINIDUMP_THREAD_NAME structs. The length of the array is indicated by
-  //!    the NumberOfThreadNames field in this struct.
-  struct MINIDUMP_THREAD_NAME ThreadNames[0];
-};
 #else
 
 struct MINIDUMP_HANDLE_DESCRIPTOR_2 {
