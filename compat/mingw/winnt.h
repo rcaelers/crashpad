@@ -15,8 +15,8 @@
 #ifndef CRASHPAD_COMPAT_MINGW_WINNT_H_
 #define CRASHPAD_COMPAT_MINGW_WINNT_H_
 
-#include <minwindef.h>
 #include_next <winnt.h>
+#include <minwindef.h>
 
 // https://msdn.microsoft.com/library/aa373184.aspx: "Note that this structure
 // definition was accidentally omitted from WinNT.h."
@@ -63,7 +63,7 @@ struct PROCESSOR_POWER_INFORMATION {
 extern "C" {
 #endif
 
-WINBASEAPI HRESULT WINAPI GetThreadDescription(HANDLE, PWSTR*);
+WINBASEAPI HRESULT WINAPI GetThreadDescription(HANDLE,PWSTR *);
 
 #ifdef __cplusplus
 }

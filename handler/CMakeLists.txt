@@ -123,7 +123,9 @@ if(NOT IOS)
     set_property(TARGET crashpad_handler PROPERTY EXPORT_NAME crashpad_handler)
     add_executable(crashpad::handler ALIAS crashpad_handler)
 
-    crashpad_install_target(crashpad_handler)
+    install(TARGETS crashpad_handler EXPORT crashpad_export
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+    )
 endif()
 
 if(CRASHPAD_WER_ENABLED)
@@ -152,5 +154,7 @@ if(CRASHPAD_WER_ENABLED)
     set_property(TARGET crashpad_wer PROPERTY PREFIX "") # ensure MINGW doesn't prefix "lib" to dll name
     add_library(crashpad::wer ALIAS crashpad_wer)
 
-    crashpad_install_target(crashpad_wer)
+    install(TARGETS crashpad_wer EXPORT crashpad_export
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+    )
 endif()
