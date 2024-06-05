@@ -49,7 +49,7 @@ function(crashpad_install_dev)
     endif()
 endfunction()
 
-if(WIN32)
+if(WIN32 AND NOT (MINGW AND "${CMAKE_SYSTEM_PROCESSOR}" MATCHES "[Aa][Rr][Mm]64"))
     if("${CMAKE_SYSTEM_PROCESSOR}" MATCHES ARM64)
         enable_language(ASM_MARMASM)
     else()
