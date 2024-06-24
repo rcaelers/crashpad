@@ -249,7 +249,7 @@ endif()
 
 if(LINUX OR ANDROID)
     if (LINUX)
-        if(NOT CURL_FOUND) # Some other lib might bring libcurl already
+        if(NOT TARGET CURL::libcurl) # Some other lib might bring libcurl already
             find_package(CURL REQUIRED)
         endif()
 
