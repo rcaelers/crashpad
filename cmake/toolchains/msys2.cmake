@@ -22,7 +22,10 @@ list(APPEND CMAKE_PREFIX_PATH
     ${MINGW_ROOT}
 )
 
-SET (CMAKE_ASM_MASM_COMPILER    "uasm")
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "amd64|AMD64")
+    set(CMAKE_ASM_MASM_COMPILER    "uasm")
+endif()
+
 SET (CMAKE_C_COMPILER           "clang")
 SET (CMAKE_CXX_COMPILER         "clang++")
 

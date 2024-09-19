@@ -70,7 +70,7 @@ jobs:
           cmake --build cmake-build-stacks --parallel
 
   build-ios:
-    name: 'iOS'
+    name: "iOS"
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -110,7 +110,7 @@ jobs:
         run: |
           mkdir _build _deploy
           export MINGW_ROOT=/c/msys64
-          cmake -GNinja -B_build -H. -DCMAKE_TOOLCHAIN_FILE=toolchains/msys2.cmake -DCMAKE_INSTALL_PREFIX=_deploy -D CRASHPAD_ENABLE_STACKTRACE=ON
+          cmake -GNinja -B_build -H. -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/msys2.cmake -DCMAKE_INSTALL_PREFIX=_deploy -D CRASHPAD_ENABLE_STACKTRACE=ON
           ninja -C _build -v install
           export name=crashpad-mingw64-`date +"%Y%m%d"`-${GITHUB_RUN_NUMBER}-${GITHUB_SHA}
           /usr/bin/tar cvfJ ${name}.tar.xz -C _deploy --transform "s,^./,${name}/," .
@@ -125,5 +125,5 @@ jobs:
           aws configure set s3.endpoint_url https://snapshots.workrave.org/
           aws s3 --endpoint-url https://snapshots.workrave.org/ cp (get-item crashpad-mingw64-*.tar.xz).Fullname s3://crashpad
         env:
-           MINIO_SECRET_KEY: ${{ secrets.MINIO_SECRET_KEY }}
+          MINIO_SECRET_KEY: ${{ secrets.MINIO_SECRET_KEY }}
 #(Get-ChildItem *entry.md | Select-Object -Expand FullName)
