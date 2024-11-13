@@ -289,6 +289,9 @@ bool HTTPTransportMac::ExecuteProxyRequest(NSMutableURLRequest* request,
       @"HTTPSEnable" : @YES,
       @"HTTPSPort" : proxy_port,
       @"HTTPSProxy" : hostNS,
+      (__bridge id)kCFNetworkProxiesSOCKSEnable : @YES,
+      (__bridge id)kCFNetworkProxiesSOCKSPort : proxy_port,
+      (__bridge id)kCFNetworkProxiesSOCKSProxy : hostNS,
     };
     sessionConfig.connectionProxyDictionary = proxyDict;
     NSURLSession* session =
