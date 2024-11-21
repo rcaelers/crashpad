@@ -282,14 +282,26 @@ bool HTTPTransportMac::ExecuteProxyRequest(NSMutableURLRequest* request,
     NSString* hostNS = base::SysUTF8ToNSString(host);
     NSNumber* proxy_port = @(std::stoi(port));
 
-    NSDictionary* proxyDict = @{
-      (__bridge id)kCFNetworkProxiesHTTPEnable : @YES,
-      (__bridge id)kCFNetworkProxiesHTTPPort : proxy_port,
-      (__bridge id)kCFNetworkProxiesHTTPProxy : hostNS,
-      @"HTTPSEnable" : @YES,
-      @"HTTPSPort" : proxy_port,
-      @"HTTPSProxy" : hostNS,
-    };
+    NSDictionary* proxyDict;
+
+    if ([schemeNS isEqualToString:@"http"] || [schemeNS isEqualToString:@"https"]) {
+        // The keys in this dictionary refer to the target URL,
+        // whereas `schemeNS` refers to the proxy URL.
+        proxyDict = @{
+          @"HTTPEnable" : @YES,
+          @"HTTPPort" : proxy_port,
+          @"HTTPProxy" : hostNS,
+          @"HTTPSEnable" : @YES,
+          @"HTTPSPort" : proxy_port,
+          @"HTTPSProxy" : hostNS
+        };
+    } else if ([schemeNS isEqualToString:@"socks5"]) {
+        proxyDict = @{
+          @"SOCKSEnable" : @YES,
+          @"SOCKSPort" : proxy_port,
+          @"SOCKSProxy" : hostNS
+        };
+    }
     sessionConfig.connectionProxyDictionary = proxyDict;
     NSURLSession* session =
         [NSURLSession sessionWithConfiguration:sessionConfig];
