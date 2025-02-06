@@ -56,7 +56,12 @@ std::vector<std::string> BuildHandlerArgvStrings(
   }
 
   if (!http_proxy.empty()) {
-    argv_strings.push_back(FormatArgumentString("http-proxy", http_proxy));
+    // explicitly set an empty proxy to avoid reading from env. vars.
+    if(http_proxy == "<empty>"){
+      argv_strings.push_back(FormatArgumentString("http-proxy", ""));
+    }else{
+      argv_strings.push_back(FormatArgumentString("http-proxy", http_proxy));
+    }
   }
 
   for (const auto& kv : annotations) {
