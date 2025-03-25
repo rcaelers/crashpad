@@ -123,6 +123,8 @@ class CrashpadClient {
   //!     captured with each report at the time of the crash.
   //! \param[in] screenshot The path to a screenshot that should be
   //!     captured with each report at the time of the crash.
+  //! \param[in] wait_for_upload If true, the handler will wait until the upload
+  //!     process finishes before signaling shutdown.
   //!
   //! \return `true` on success, `false` on failure with a message logged.
   bool StartHandler(const base::FilePath& handler,
@@ -135,7 +137,8 @@ class CrashpadClient {
                     bool restartable,
                     bool asynchronous_start,
                     const std::vector<base::FilePath>& attachments = {},
-                    const base::FilePath& screenshot = base::FilePath());
+                    const base::FilePath& screenshot = base::FilePath(),
+                    bool wait_for_upload = false);
 
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
     DOXYGEN

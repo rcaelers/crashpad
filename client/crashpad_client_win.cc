@@ -646,7 +646,9 @@ bool CrashpadClient::StartHandler(
     bool restartable,
     bool asynchronous_start,
     const std::vector<base::FilePath>& attachments,
-    const base::FilePath& screenshot) {
+    const base::FilePath& screenshot,
+    bool wait_for_upload) {
+  (void) wait_for_upload; // unused in win (for now)
   DCHECK(ipc_pipe_.empty());
 
   // Both the pipe and the signalling events have to be created on the main

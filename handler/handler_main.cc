@@ -269,6 +269,9 @@ struct Options {
 #if defined(SCREENSHOT_SUPPORTED)
   base::FilePath screenshot;
 #endif  // SCREENSHOT_SUPPORTED
+#if BUILDFLAG(IS_LINUX)
+  bool wait_for_upload = false;
+#endif
 };
 
 // Splits |key_value| on '=' and inserts the resulting key and value into |map|.
@@ -647,6 +650,9 @@ int HandlerMain(int argc,
 #if BUILDFLAG(IS_ANDROID)
     kOptionWriteMinidumpToLog,
 #endif  // BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_LINUX)
+  kOptionWaitForUpload,
+#endif
 
     // Standard options.
     kOptionHelp = -2,
@@ -741,6 +747,9 @@ int HandlerMain(int argc,
 #if BUILDFLAG(IS_ANDROID)
     {"write-minidump-to-log", no_argument, nullptr, kOptionWriteMinidumpToLog},
 #endif  // BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_LINUX)
+  {"wait-for-upload", optional_argument, nullptr, kOptionWaitForUpload},
+#endif
     {"help", no_argument, nullptr, kOptionHelp},
     {"version", no_argument, nullptr, kOptionVersion},
     {nullptr, 0, nullptr, 0},
@@ -932,6 +941,12 @@ int HandlerMain(int argc,
         break;
       }
 #endif  // BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_LINUX)
+      case kOptionWaitForUpload : {
+        options.wait_for_upload = true;
+        break;
+      }
+#endif
       case kOptionHelp: {
         Usage(me);
         MetricsRecordExit(Metrics::LifetimeMilestone::kExitedEarly);
@@ -1120,7 +1135,11 @@ int HandlerMain(int argc,
       true,
       false,
 #endif  // BUILDFLAG(IS_LINUX)
-      user_stream_sources);
+      user_stream_sources
+#if BUILDFLAG(IS_LINUX)
+      ,options.wait_for_upload
+#endif
+  );
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)

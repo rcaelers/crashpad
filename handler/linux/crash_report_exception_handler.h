@@ -69,7 +69,8 @@ class CrashReportExceptionHandler : public ExceptionHandlerServer::Delegate {
       const std::vector<base::FilePath>* attachments,
       bool write_minidump_to_database,
       bool write_minidump_to_log,
-      const UserStreamDataSources* user_stream_data_sources);
+      const UserStreamDataSources* user_stream_data_sources,
+      bool wait_for_upload);
 
   CrashReportExceptionHandler(const CrashReportExceptionHandler&) = delete;
   CrashReportExceptionHandler& operator=(const CrashReportExceptionHandler&) =
@@ -108,6 +109,12 @@ class CrashReportExceptionHandler : public ExceptionHandlerServer::Delegate {
                                UUID* local_report_id);
   bool WriteMinidumpToLog(ProcessSnapshotLinux* process_snapshot,
                           ProcessSnapshotSanitized* sanitized_snapshot);
+  // Force Crashpad Handler to wait for one upload attempt if there is a pending report
+  /**
+   * Flush upload thread. If any report is being uploaded, this will
+   * block until an upload attempt is made.
+   */
+  void FlushUploadThread();
 
   CrashReportDatabase* database_;  // weak
   CrashReportUploadThread* upload_thread_;  // weak
@@ -116,6 +123,7 @@ class CrashReportExceptionHandler : public ExceptionHandlerServer::Delegate {
   bool write_minidump_to_database_;
   bool write_minidump_to_log_;
   const UserStreamDataSources* user_stream_data_sources_;  // weak
+  bool wait_for_upload_ = false;
 };
 
 }  // namespace crashpad

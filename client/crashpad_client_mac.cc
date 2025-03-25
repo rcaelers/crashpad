@@ -483,7 +483,10 @@ bool CrashpadClient::StartHandler(
     bool restartable,
     bool asynchronous_start,
     const std::vector<base::FilePath>& attachments,
-    const base::FilePath& screenshot) {
+    const base::FilePath& screenshot,
+    bool wait_for_upload) {
+  (void) wait_for_upload; // unused in mac (for now)
+
   // The “restartable” behavior can only be selected on OS X 10.10 and later. In
   // previous OS versions, if the initial client were to crash while attempting
   // to restart the handler, it would become an unkillable process.
