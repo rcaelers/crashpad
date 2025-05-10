@@ -15,6 +15,8 @@
 // See:
 // https://docs.microsoft.com/en-us/windows/win32/api/werapi/nf-werapi-werregisterruntimeexceptionmodule
 
+#include <stddef.h>
+
 #include "handler/win/wer/crashpad_wer.h"
 
 #include "util/misc/address_types.h"
