@@ -29,6 +29,7 @@
 #include "util/misc/metrics.h"
 #include "util/win/registration_protocol_win.h"
 #include "util/win/scoped_process_suspend.h"
+#include "util/win/screenshot.h"
 #include "util/win/termination_codes.h"
 
 namespace crashpad {
@@ -38,12 +39,14 @@ CrashReportExceptionHandler::CrashReportExceptionHandler(
     CrashReportUploadThread* upload_thread,
     const std::map<std::string, std::string>* process_annotations,
     const std::vector<base::FilePath>* attachments,
+    const base::FilePath* screenshot,
     const UserStreamDataSources* user_stream_data_sources,
     UserHook* user_hook)
     : database_(database),
       upload_thread_(upload_thread),
       process_annotations_(process_annotations),
       attachments_(attachments),
+      screenshot_(screenshot),
       user_stream_data_sources_(user_stream_data_sources),
       user_hook_(user_hook) {}
 
@@ -135,7 +138,7 @@ unsigned int CrashReportExceptionHandler::ExceptionHandlerServerException(
     }
 
     bool consent = true;
-    
+
     if (user_hook_ != nullptr) {
       consent = user_hook_->requestUserConsent(*process_annotations_, *attachments_);
       if (consent) {
@@ -146,6 +149,20 @@ unsigned int CrashReportExceptionHandler::ExceptionHandlerServerException(
             LOG(ERROR) << "user text couldn't be created, skipping";
           } else {
             file_writer->Write(user_text.data(), user_text.size());
+          }
+        }
+      }
+    }
+
+    if (screenshot_ && !screenshot_->empty()) {
+      if (CaptureScreenshot(process_snapshot.ProcessID(), *screenshot_)) {
+        FileReader file_reader;
+        if (file_reader.Open(*screenshot_)) {
+          base::FilePath filename = screenshot_->BaseName();
+          FileWriter* file_writer =
+              new_report->AddAttachment(base::WideToUTF8(filename.value()));
+          if (file_writer != nullptr) {
+            CopyFileContent(&file_reader, file_writer);
           }
         }
       }

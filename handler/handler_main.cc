@@ -98,6 +98,9 @@ namespace {
 #define ATTACHMENTS_SUPPORTED 1
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) ||
         // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_APPLE)
+#if BUILDFLAG(IS_WIN)
+#define SCREENSHOT_SUPPORTED 1
+#endif  // BUILDFLAG(IS_WIN)
 
 void Usage(const base::FilePath& me) {
   // clang-format off
@@ -113,6 +116,12 @@ void Usage(const base::FilePath& me) {
 "                              at the time of the crash\n"
   // clang-format on
 #endif  // ATTACHMENTS_SUPPORTED
+#if defined(SCREENSHOT_SUPPORTED)
+      // clang-format off
+"      --screenshot=FILE_PATH  capture a screenshot to FILE_PATH\n"
+"                              at the time of the crash\n"
+  // clang-format on
+#endif  // SCREENSHOT_SUPPORTED
       // clang-format off
 "      --database=PATH         store the crash report database at PATH\n"
   // clang-format on
@@ -257,6 +266,12 @@ struct Options {
 #if defined(ATTACHMENTS_SUPPORTED)
   std::vector<base::FilePath> attachments;
 #endif  // ATTACHMENTS_SUPPORTED
+#if defined(SCREENSHOT_SUPPORTED)
+  base::FilePath screenshot;
+#endif  // SCREENSHOT_SUPPORTED
+#if BUILDFLAG(IS_LINUX)
+  bool wait_for_upload = false;
+#endif
 };
 
 // Splits |key_value| on '=' and inserts the resulting key and value into |map|.
@@ -587,6 +602,9 @@ int HandlerMain(int argc,
 #if defined(ATTACHMENTS_SUPPORTED)
     kOptionAttachment,
 #endif  // ATTACHMENTS_SUPPORTED
+#if defined(SCREENSHOT_SUPPORTED)
+    kOptionScreenshot,
+#endif  // SCREENSHOT_SUPPORTED
     kOptionDatabase,
 #if BUILDFLAG(IS_APPLE)
     kOptionHandshakeFD,
@@ -633,6 +651,9 @@ int HandlerMain(int argc,
 #if BUILDFLAG(IS_ANDROID)
     kOptionWriteMinidumpToLog,
 #endif  // BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_LINUX)
+  kOptionWaitForUpload,
+#endif
 
     // Standard options.
     kOptionHelp = -2,
@@ -644,6 +665,9 @@ int HandlerMain(int argc,
 #if defined(ATTACHMENTS_SUPPORTED)
     {"attachment", required_argument, nullptr, kOptionAttachment},
 #endif  // ATTACHMENTS_SUPPORTED
+#if defined(SCREENSHOT_SUPPORTED)
+    {"screenshot", required_argument, nullptr, kOptionScreenshot},
+#endif  // SCREENSHOT_SUPPORTED
     {"database", required_argument, nullptr, kOptionDatabase},
 #if BUILDFLAG(IS_APPLE)
     {"handshake-fd", required_argument, nullptr, kOptionHandshakeFD},
@@ -724,6 +748,9 @@ int HandlerMain(int argc,
 #if BUILDFLAG(IS_ANDROID)
     {"write-minidump-to-log", no_argument, nullptr, kOptionWriteMinidumpToLog},
 #endif  // BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_LINUX)
+  {"wait-for-upload", optional_argument, nullptr, kOptionWaitForUpload},
+#endif
     {"help", no_argument, nullptr, kOptionHelp},
     {"version", no_argument, nullptr, kOptionVersion},
     {nullptr, 0, nullptr, 0},
@@ -760,6 +787,13 @@ int HandlerMain(int argc,
         break;
       }
 #endif  // ATTACHMENTS_SUPPORTED
+#if defined(SCREENSHOT_SUPPORTED)
+      case kOptionScreenshot: {
+        options.screenshot = base::FilePath(
+            ToolSupport::CommandLineArgumentToFilePathStringType(optarg));
+        break;
+      }
+#endif  // SCREENSHOT_SUPPORTED
       case kOptionDatabase: {
         options.database = base::FilePath(
             ToolSupport::CommandLineArgumentToFilePathStringType(optarg));
@@ -908,6 +942,12 @@ int HandlerMain(int argc,
         break;
       }
 #endif  // BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_LINUX)
+      case kOptionWaitForUpload : {
+        options.wait_for_upload = true;
+        break;
+      }
+#endif
       case kOptionHelp: {
         Usage(me);
         MetricsRecordExit(Metrics::LifetimeMilestone::kExitedEarly);
@@ -1085,6 +1125,9 @@ int HandlerMain(int argc,
 #if defined(ATTACHMENTS_SUPPORTED)
       &options.attachments,
 #endif  // ATTACHMENTS_SUPPORTED
+#if defined(SCREENSHOT_SUPPORTED)
+      &options.screenshot,
+#endif  // SCREENSHOT_SUPPORTED
 #if BUILDFLAG(IS_ANDROID)
       options.write_minidump_to_database,
       options.write_minidump_to_log,
@@ -1094,7 +1137,11 @@ int HandlerMain(int argc,
       false,
 #endif  // BUILDFLAG(IS_LINUX)
       user_stream_sources,
-      user_hook);
+      user_hook
+#if BUILDFLAG(IS_LINUX)
+      ,options.wait_for_upload
+#endif
+  );
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)

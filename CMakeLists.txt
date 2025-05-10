@@ -83,7 +83,7 @@ else()
     enable_language(ASM)
 endif()
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_library(crashpad_interface INTERFACE)
@@ -122,12 +122,27 @@ if(MSVC)
         $<$<COMPILE_LANGUAGE:C,CXX>:/wd4351> # New behavior: elements of array will be default initialized.
         $<$<COMPILE_LANGUAGE:C,CXX>:/wd4577> # 'noexcept' used with no exception handling mode specified.
         $<$<COMPILE_LANGUAGE:C,CXX>:/wd4996> # 'X' was declared deprecated.
+        $<$<AND:$<COMPILE_LANGUAGE:C,CXX>,$<C_COMPILER_ID:Clang>>:-Wno-missing-field-initializers> # missing field initializer
+        $<$<AND:$<COMPILE_LANGUAGE:C,CXX>,$<C_COMPILER_ID:Clang>>:-Wno-sign-compare> # comparison of integers of different signs
+        $<$<AND:$<COMPILE_LANGUAGE:C,CXX>,$<C_COMPILER_ID:Clang>>:-Wno-microsoft-cast> # implicit conversion between pointer-to-function and pointer-to-object
+        $<$<AND:$<COMPILE_LANGUAGE:C,CXX>,$<C_COMPILER_ID:Clang>>:-Wno-unused-parameter> # same as /wd4100
+        $<$<AND:$<COMPILE_LANGUAGE:C,CXX>,$<C_COMPILER_ID:Clang>>:-Wno-deprecated-declarations> # same as /wd4996
+        $<$<AND:$<COMPILE_LANGUAGE:C,CXX>,$<C_COMPILER_ID:Clang>>:-Wno-format> # only Clang-CL
+        $<$<AND:$<COMPILE_LANGUAGE:C,CXX>,$<C_COMPILER_ID:Clang>>:-Wno-cast-function-type-mismatch> # only Clang-CL
     )
 elseif(MINGW)
     # redirect to wmain
     # FIXME: cmake 3.13 added target_link_options
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -municode")
 endif()
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(crashpad_interface INTERFACE
+        $<$<COMPILE_LANGUAGE:CXX>:-Wno-multichar>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wno-attributes>
+    )
+endif()
+
 add_library(crashpad::interface ALIAS crashpad_interface)
 
 add_subdirectory(compat)

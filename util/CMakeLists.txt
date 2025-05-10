@@ -368,6 +368,8 @@ if(WIN32)
         win/scoped_registry_key.h
         win/scoped_set_event.cc
         win/scoped_set_event.h
+        win/screenshot.cc
+        win/screenshot.h
         win/session_end_watcher.cc
         win/session_end_watcher.h
         win/termination_codes.h
@@ -548,13 +550,6 @@ if(WIN32)
         )
     endif()
 endif()
-
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(crashpad_util PRIVATE
-        $<$<COMPILE_LANGUAGE:CXX>:-Wno-multichar>
-    )
-endif()
-
 
 set_property(TARGET crashpad_util PROPERTY EXPORT_NAME util)
 add_library(crashpad::util ALIAS crashpad_util)
