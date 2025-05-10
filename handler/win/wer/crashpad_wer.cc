@@ -83,12 +83,7 @@ bool ProcessException(const DWORD* handled_exceptions,
 
   // Older OSes might provide a smaller structure than SDK 19041 defines.
   if (e_info->dwSize <=
-#if defined(__MINGW32__)
-      FIELD_OFFSET(WER_RUNTIME_EXCEPTION_INFORMATION_19041, bIsFatal)
-#else
-      offsetof(WER_RUNTIME_EXCEPTION_INFORMATION_19041, bIsFatal)
-#endif
-  ) {
+      offsetof(WER_RUNTIME_EXCEPTION_INFORMATION_19041, bIsFatal)) {
     return false;
   }
 
