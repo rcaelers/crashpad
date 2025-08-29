@@ -162,6 +162,7 @@ add_subdirectory(client)
 
 add_subdirectory(third_party/zlib)
 add_subdirectory(third_party/getopt)
+add_subdirectory(third_party/mpack)
 
 add_subdirectory(tools)
 add_subdirectory(handler)

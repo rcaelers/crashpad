@@ -192,6 +192,43 @@ class CrashReportDatabase {
     bool report_metrics_;
   };
 
+  //! \brief A helper class for creating crash report envelopes that aggregate
+  //! crash data.
+  class Envelope {
+   public:
+    Envelope(const UUID& uuid);
+
+    Envelope(const Envelope&) = delete;
+    Envelope& operator=(const Envelope&) = delete;
+
+    ~Envelope() = default;
+
+    //! \brief Initializes the feedback report with the given file path.
+    //! \param[in] path The path where the feedback report will be written.
+    //! \return true on success, false on failure.
+    bool Initialize(const base::FilePath& path);
+
+    //! \brief Adds attachments to the feedback report.
+    //! \param[in] attachments Vector of file paths to attach.
+    void AddAttachments(const std::vector<base::FilePath>& attachments);
+
+    //! \brief Adds minidump data to the feedback report.
+    //! \param[in] reader File reader for the minidump data.
+    void AddMinidump(FileReaderInterface* reader);
+
+    //! \brief Finalizes the feedback report and closes file handles.
+    void Finish();
+
+   private:
+    void AddEvent(const base::FilePath& event,
+                  const std::vector<base::FilePath>& breadcrumbs);
+    void AddAttachment(const base::FilePath& attachment);
+
+    UUID uuid_;
+    base::FilePath path_;
+    std::unique_ptr<FileWriter> writer_;
+  };
+
   //! \brief The result code for operations performed on a database.
   enum OperationStatus {
     //! \brief No error occurred.
@@ -414,6 +451,22 @@ class CrashReportDatabase {
   //!     report files are considered expired.
   //! \return The number of reports cleaned.
   virtual int CleanDatabase(time_t lockfile_ttl) { return 0; }
+
+  //! \brief Launches the external crash reporter.
+  //!
+  //! This method launches an external crash reporter process with the
+  //! provided crash report file. The implementation is platform-specific and
+  //! may have different behaviors on different operating systems.
+  //!
+  //! \param[in] crash_reporter The path to the crash reporter executable.
+  //!     On macOS, this can be either an executable or an .app bundle.
+  //! \param[in] crash_envelope The path to the crash report envelope file that
+  //!     will be passed as an argument to the crash reporter.
+  //!
+  //! \note The launched process runs detached from the parent process.
+  //! \note This method may not be implemented on all platforms.
+  virtual void LaunchCrashReporter(const base::FilePath& crash_reporter,
+                                   const base::FilePath& crash_envelope) {}
 
  protected:
   CrashReportDatabase() {}

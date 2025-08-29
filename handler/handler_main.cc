@@ -272,6 +272,8 @@ struct Options {
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
   bool wait_for_upload = false;
 #endif
+  base::FilePath crash_reporter;
+  base::FilePath crash_envelope;
 };
 
 // Splits |key_value| on '=' and inserts the resulting key and value into |map|.
@@ -651,8 +653,10 @@ int HandlerMain(int argc,
     kOptionWriteMinidumpToLog,
 #endif  // BUILDFLAG(IS_ANDROID)
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
-  kOptionWaitForUpload,
+    kOptionWaitForUpload,
 #endif
+    kOptionCrashReporter,
+    kOptionCrashEnvelope,
 
     // Standard options.
     kOptionHelp = -2,
@@ -748,8 +752,10 @@ int HandlerMain(int argc,
     {"write-minidump-to-log", no_argument, nullptr, kOptionWriteMinidumpToLog},
 #endif  // BUILDFLAG(IS_ANDROID)
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
-  {"wait-for-upload", no_argument, nullptr, kOptionWaitForUpload},
+    {"wait-for-upload", no_argument, nullptr, kOptionWaitForUpload},
 #endif
+    {"crash-reporter", required_argument, nullptr, kOptionCrashReporter},
+    {"crash-envelope", required_argument, nullptr, kOptionCrashEnvelope},
     {"help", no_argument, nullptr, kOptionHelp},
     {"version", no_argument, nullptr, kOptionVersion},
     {nullptr, 0, nullptr, 0},
@@ -947,6 +953,16 @@ int HandlerMain(int argc,
         break;
       }
 #endif
+      case kOptionCrashReporter: {
+        options.crash_reporter = base::FilePath(
+            ToolSupport::CommandLineArgumentToFilePathStringType(optarg));
+        break;
+      }
+      case kOptionCrashEnvelope: {
+        options.crash_envelope = base::FilePath(
+            ToolSupport::CommandLineArgumentToFilePathStringType(optarg));
+        break;
+      }
       case kOptionHelp: {
         Usage(me);
         MetricsRecordExit(Metrics::LifetimeMilestone::kExitedEarly);
@@ -1139,6 +1155,8 @@ int HandlerMain(int argc,
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
       ,options.wait_for_upload
 #endif
+      ,&options.crash_reporter
+      ,&options.crash_envelope
   );
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 

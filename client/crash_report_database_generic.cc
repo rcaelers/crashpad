@@ -30,6 +30,9 @@
 #include "util/file/filesystem.h"
 #include "util/misc/initialization_state_dcheck.h"
 #include "util/misc/memory_sanitizer.h"
+#if BUILDFLAG(IS_LINUX)
+#include "util/posix/spawn_subprocess.h"
+#endif
 
 namespace crashpad {
 
@@ -189,6 +192,8 @@ class CrashReportDatabaseGeneric : public CrashReportDatabase {
   OperationStatus RequestUpload(const UUID& uuid) override;
   int CleanDatabase(time_t lockfile_ttl) override;
   base::FilePath DatabasePath() override;
+  void LaunchCrashReporter(const base::FilePath& crash_reporter,
+                           const base::FilePath& crash_envelope) override;
 
  private:
   struct LockfileUploadReport : public UploadReport {
@@ -319,6 +324,22 @@ CrashReportDatabase::InitializeWithoutCreating(const base::FilePath& path) {
 
 base::FilePath CrashReportDatabaseGeneric::DatabasePath() {
   return base_dir_;
+}
+
+void CrashReportDatabaseGeneric::LaunchCrashReporter(
+    const base::FilePath& crash_reporter,
+    const base::FilePath& crash_envelope) {
+#if BUILDFLAG(IS_LINUX)
+  SpawnSubprocess(
+      {
+          crash_reporter.value(),
+          crash_envelope.value(),
+      },
+      nullptr,
+      -1,
+      false,
+      nullptr);
+#endif
 }
 
 Settings* CrashReportDatabaseGeneric::GetSettings() {

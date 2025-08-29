@@ -48,12 +48,16 @@ CrashReportExceptionHandler::CrashReportExceptionHandler(
     CrashReportUploadThread* upload_thread,
     const std::map<std::string, std::string>* process_annotations,
     const std::vector<base::FilePath>* attachments,
-    const UserStreamDataSources* user_stream_data_sources)
+    const UserStreamDataSources* user_stream_data_sources,
+    const base::FilePath* crash_reporter,
+    const base::FilePath* crash_envelope)
     : database_(database),
       upload_thread_(upload_thread),
       process_annotations_(process_annotations),
       attachments_(attachments),
-      user_stream_data_sources_(user_stream_data_sources) {}
+      user_stream_data_sources_(user_stream_data_sources),
+      crash_reporter_(crash_reporter),
+      crash_envelope_(crash_envelope) {}
 
 CrashReportExceptionHandler::~CrashReportExceptionHandler() {
 }
@@ -196,6 +200,20 @@ kern_return_t CrashReportExceptionHandler::CatchMachException(
       CopyFileContent(&file_reader, file_writer);
     }
 
+    bool has_crash_reporter = crash_reporter_ && !crash_reporter_->empty() &&
+                              crash_envelope_ && !crash_envelope_->empty();
+    if (has_crash_reporter) {
+      CrashReportDatabase::Envelope envelope(new_report->ReportID());
+      if (envelope.Initialize(*crash_envelope_)) {
+        envelope.AddAttachments(*attachments_);
+        if (auto reader = new_report->Reader()) {
+          envelope.AddMinidump(reader);
+        }
+        envelope.Finish();
+        database_->LaunchCrashReporter(*crash_reporter_, *crash_envelope_);
+      }
+    }
+
     UUID uuid;
     database_status =
         database_->FinishedWritingCrashReport(std::move(new_report), &uuid);
@@ -205,7 +223,9 @@ kern_return_t CrashReportExceptionHandler::CatchMachException(
       return KERN_FAILURE;
     }
 
-    if (upload_thread_) {
+    if (has_crash_reporter) {
+      database_->DeleteReport(uuid);
+    } else if (upload_thread_) {
       upload_thread_->ReportPending(uuid);
     }
   }

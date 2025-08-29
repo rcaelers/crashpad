@@ -71,7 +71,9 @@ class CrashReportExceptionHandler : public ExceptionHandlerServer::Delegate {
       bool write_minidump_to_database,
       bool write_minidump_to_log,
       const UserStreamDataSources* user_stream_data_sources,
-      bool wait_for_upload);
+      bool wait_for_upload,
+      const base::FilePath* crash_reporter,
+      const base::FilePath* crash_envelope);
 
   CrashReportExceptionHandler(const CrashReportExceptionHandler&) = delete;
   CrashReportExceptionHandler& operator=(const CrashReportExceptionHandler&) =
@@ -128,6 +130,8 @@ class CrashReportExceptionHandler : public ExceptionHandlerServer::Delegate {
   bool write_minidump_to_log_;
   const UserStreamDataSources* user_stream_data_sources_;  // weak
   bool wait_for_upload_ = false;
+  const base::FilePath* crash_reporter_;  // weak
+  const base::FilePath* crash_envelope_;  // weak
 };
 
 }  // namespace crashpad
