@@ -29,6 +29,7 @@
 #include <array>
 #include <iterator>
 #include <mutex>
+#include <string_view>
 #include <tuple>
 
 #include "base/apple/scoped_nsautorelease_pool.h"
@@ -36,7 +37,6 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/scoped_generic.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/sys_string_conversions.h"
 #include "client/settings.h"
 #include "util/file/directory_reader.h"
@@ -116,7 +116,7 @@ bool CreateOrEnsureDirectoryExists(const base::FilePath& path) {
 // Creates a long database xattr name from the short constant name. These names
 // have changed, and new_name determines whether the returned xattr name will be
 // the old name or its new equivalent.
-std::string XattrNameInternal(const base::StringPiece& name, bool new_name) {
+std::string XattrNameInternal(std::string_view name, bool new_name) {
   return base::StrCat({new_name ? "org.chromium.crashpad.database."
                                 : "com.googlecode.crashpad.",
                        name});
@@ -253,7 +253,7 @@ class CrashReportDatabaseMac : public CrashReportDatabase {
   //! \param[in] name The short name of the extended attribute.
   //!
   //! \return The long name of the extended attribute.
-  std::string XattrName(const base::StringPiece& name);
+  std::string XattrName(std::string_view name);
 
   //! \brief Marks a report with a given path as completed.
   //!
@@ -271,13 +271,11 @@ class CrashReportDatabaseMac : public CrashReportDatabase {
   void CleanOrphanedAttachments();
 
   Settings& SettingsInternal() {
-    std::call_once(settings_init_, [this]() {
-      settings_.Initialize(base_dir_.Append(kSettings));
-    });
+    std::call_once(settings_init_, [this]() { settings_.Initialize(); });
     return settings_;
   }
 
-  base::FilePath base_dir_;
+  const base::FilePath base_dir_;
   Settings settings_;
   std::once_flag settings_init_;
   bool xattr_new_names_;
@@ -287,7 +285,7 @@ class CrashReportDatabaseMac : public CrashReportDatabase {
 CrashReportDatabaseMac::CrashReportDatabaseMac(const base::FilePath& path)
     : CrashReportDatabase(),
       base_dir_(path),
-      settings_(),
+      settings_(path.Append(kSettings)),
       settings_init_(),
       xattr_new_names_(false),
       initialized_() {}
@@ -871,7 +869,7 @@ CrashReportDatabase::OperationStatus CrashReportDatabaseMac::ReportsInDirectory(
   return kNoError;
 }
 
-std::string CrashReportDatabaseMac::XattrName(const base::StringPiece& name) {
+std::string CrashReportDatabaseMac::XattrName(std::string_view name) {
   return XattrNameInternal(name, xattr_new_names_);
 }
 
@@ -938,6 +936,8 @@ void CrashReportDatabaseMac::CleanOrphanedAttachments() {
   }
 }
 
+namespace {
+
 std::unique_ptr<CrashReportDatabase> InitializeInternal(
     const base::FilePath& path,
     bool may_create) {
@@ -949,6 +949,8 @@ std::unique_ptr<CrashReportDatabase> InitializeInternal(
   return std::unique_ptr<CrashReportDatabase>(database_mac.release());
 }
 
+}  // namespace
+
 // static
 std::unique_ptr<CrashReportDatabase> CrashReportDatabase::Initialize(
     const base::FilePath& path) {
@@ -959,6 +961,13 @@ std::unique_ptr<CrashReportDatabase> CrashReportDatabase::Initialize(
 std::unique_ptr<CrashReportDatabase>
 CrashReportDatabase::InitializeWithoutCreating(const base::FilePath& path) {
   return InitializeInternal(path, false);
+}
+
+// static
+std::unique_ptr<SettingsReader>
+CrashReportDatabase::GetSettingsReaderForDatabasePath(
+    const base::FilePath& path) {
+  return std::make_unique<SettingsReader>(path.Append(kSettings));
 }
 
 }  // namespace crashpad

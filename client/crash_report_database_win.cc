@@ -666,13 +666,11 @@ class CrashReportDatabaseWin : public CrashReportDatabase {
   std::unique_ptr<Metadata> AcquireMetadata();
 
   Settings& SettingsInternal() {
-    std::call_once(settings_init_, [this]() {
-      settings_.Initialize(base_dir_.Append(kSettings));
-    });
+    std::call_once(settings_init_, [this]() { settings_.Initialize(); });
     return settings_;
   }
 
-  base::FilePath base_dir_;
+  const base::FilePath base_dir_;
   Settings settings_;
   std::once_flag settings_init_;
   InitializationStateDcheck initialized_;
@@ -681,7 +679,7 @@ class CrashReportDatabaseWin : public CrashReportDatabase {
 CrashReportDatabaseWin::CrashReportDatabaseWin(const base::FilePath& path)
     : CrashReportDatabase(),
       base_dir_(path),
-      settings_(),
+      settings_(path.Append(kSettings)),
       settings_init_(),
       initialized_() {}
 
@@ -946,16 +944,6 @@ std::unique_ptr<Metadata> CrashReportDatabaseWin::AcquireMetadata() {
                           AttachmentsRootPath());
 }
 
-std::unique_ptr<CrashReportDatabase> InitializeInternal(
-    const base::FilePath& path,
-    bool may_create) {
-  std::unique_ptr<CrashReportDatabaseWin> database_win(
-      new CrashReportDatabaseWin(path));
-  return database_win->Initialize(may_create)
-             ? std::move(database_win)
-             : std::unique_ptr<CrashReportDatabaseWin>();
-}
-
 OperationStatus CrashReportDatabaseWin::RequestUpload(const UUID& uuid) {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
 
@@ -1060,15 +1048,29 @@ void CrashReportDatabaseWin::CleanOrphanedAttachments() {
         continue;
       }
 
-      // Remove attachments if corresponding report doen't exist.
-      base::FilePath report_path =
-          reports_dir.Append(uuid.ToWString() + kCrashReportFileExtension);
+      // Remove attachments if corresponding report doesn't exist.
+      base::FilePath report_path = reports_dir.Append(
+          uuid.ToWString() + L"." + kCrashReportFileExtension);
       if (!IsRegularFile(report_path)) {
         RemoveAttachmentsByUUID(uuid);
       }
     }
   }
 }
+
+namespace {
+
+std::unique_ptr<CrashReportDatabase> InitializeInternal(
+    const base::FilePath& path,
+    bool may_create) {
+  std::unique_ptr<CrashReportDatabaseWin> database_win(
+      new CrashReportDatabaseWin(path));
+  return database_win->Initialize(may_create)
+             ? std::move(database_win)
+             : std::unique_ptr<CrashReportDatabaseWin>();
+}
+
+}  // namespace
 
 // static
 std::unique_ptr<CrashReportDatabase> CrashReportDatabase::Initialize(
@@ -1080,6 +1082,13 @@ std::unique_ptr<CrashReportDatabase> CrashReportDatabase::Initialize(
 std::unique_ptr<CrashReportDatabase>
 CrashReportDatabase::InitializeWithoutCreating(const base::FilePath& path) {
   return InitializeInternal(path, false);
+}
+
+// static
+std::unique_ptr<SettingsReader>
+CrashReportDatabase::GetSettingsReaderForDatabasePath(
+    const base::FilePath& path) {
+  return std::make_unique<SettingsReader>(path.Append(kSettings));
 }
 
 }  // namespace crashpad
