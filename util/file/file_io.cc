@@ -93,8 +93,12 @@ bool ReadExactly(
     bool can_log,
     void* buffer,
     size_t size) {
-  const FileOperationResult result =
-      ReadUntil(std::bind_front(read_function, can_log), buffer, size);
+  const FileOperationResult result = ReadUntil(
+      [read_function, can_log](void* buf, size_t sz) {
+        return read_function(can_log, buf, sz);
+      },
+      buffer,
+      size);
   if (result < 0) {
     return false;
   }
@@ -130,23 +134,47 @@ bool WriteAllInternal::WriteAll(const void* buffer, size_t size) {
 }  // namespace internal
 
 bool ReadFileExactly(FileHandle file, void* buffer, size_t size) {
+  FileOperationResult (*pFileIORead)(FileHandle, bool, void*, size_t) = &FileIORead;
   return internal::ReadExactly(
-      std::bind_front(&FileIORead, file), false, buffer, size);
+      [pFileIORead, file](bool cl, void* buf, size_t sz) {
+        return pFileIORead(file, cl, buf, sz);
+      },
+      false,
+      buffer,
+      size);
 }
 
 FileOperationResult ReadFileUntil(FileHandle file, void* buffer, size_t size) {
-  return ReadUntil(std::bind_front(&FileIORead, file, false), buffer, size);
+  FileOperationResult (*pFileIORead)(FileHandle, bool, void*, size_t) = &FileIORead;
+  return ReadUntil(
+      [pFileIORead, file](void* buf, size_t sz) {
+        return pFileIORead(file, false, buf, sz);
+      },
+      buffer,
+      size);
 }
 
 bool LoggingReadFileExactly(FileHandle file, void* buffer, size_t size) {
+  FileOperationResult (*pFileIORead)(FileHandle, bool, void*, size_t) = &FileIORead;
   return internal::ReadExactly(
-      std::bind_front(&FileIORead, file), true, buffer, size);
+      [pFileIORead, file](bool cl, void* buf, size_t sz) {
+        return pFileIORead(file, cl, buf, sz);
+      },
+      true,
+      buffer,
+      size);
 }
 
 FileOperationResult LoggingReadFileUntil(FileHandle file,
                                          void* buffer,
                                          size_t size) {
-  return ReadUntil(std::bind_front(&FileIORead, file, true), buffer, size);
+  FileOperationResult (*pFileIORead)(FileHandle, bool, void*, size_t) = &FileIORead;
+  return ReadUntil(
+      [pFileIORead, file](void* buf, size_t sz) {
+        return pFileIORead(file, true, buf, sz);
+      },
+      buffer,
+      size);
 }
 
 bool WriteFile(FileHandle file, const void* buffer, size_t size) {

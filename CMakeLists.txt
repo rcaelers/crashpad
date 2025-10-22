@@ -132,6 +132,7 @@ if(MSVC)
         $<$<AND:$<COMPILE_LANGUAGE:C,CXX>,$<C_COMPILER_ID:Clang>>:-Wno-deprecated-declarations> # same as /wd4996
         $<$<AND:$<COMPILE_LANGUAGE:C,CXX>,$<C_COMPILER_ID:Clang>>:-Wno-format> # only Clang-CL
         $<$<AND:$<COMPILE_LANGUAGE:C,CXX>,$<C_COMPILER_ID:Clang>>:-Wno-cast-function-type-mismatch> # only Clang-CL
+        $<$<AND:$<COMPILE_LANGUAGE:C,CXX>,$<C_COMPILER_ID:Clang>>:-Wno-return-type>
     )
 elseif(MINGW)
     # redirect to wmain
@@ -143,6 +144,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_compile_options(crashpad_interface INTERFACE
         $<$<COMPILE_LANGUAGE:CXX>:-Wno-multichar>
         $<$<COMPILE_LANGUAGE:CXX>:-Wno-attributes>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wno-return-type>
     )
 endif()
 

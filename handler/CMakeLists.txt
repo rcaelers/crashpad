@@ -1,6 +1,8 @@
 add_library(crashpad_handler_lib STATIC
     crash_report_upload_thread.cc
     crash_report_upload_thread.h
+    crash_report_upload_rate_limit.cc
+    crash_report_upload_rate_limit.h
     handler_main.cc
     handler_main.h
     minidump_to_upload_parameters.cc
