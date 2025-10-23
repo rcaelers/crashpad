@@ -158,7 +158,7 @@ LONG WINAPI UnhandledExceptionHandler(EXCEPTION_POINTERS* exception_pointers) {
   // Otherwise, we know the handler startup has succeeded, and we can continue.
 
   // Tracks whether a thread has already entered UnhandledExceptionHandler.
-  static base::subtle::AtomicWord have_crashed;
+  static std::atomic have_crashed{0};
 
   // This is a per-process handler. While this handler is being invoked, other
   // threads are still executing as usual, so multiple threads could enter at
@@ -172,7 +172,7 @@ LONG WINAPI UnhandledExceptionHandler(EXCEPTION_POINTERS* exception_pointers) {
   // that we won't save the exception pointers from the second and further
   // crashes, but contention here is very unlikely, and we'll still have a stack
   // that's blocked at this location.
-  if (base::subtle::Barrier_AtomicIncrement(&have_crashed, 1) > 1) {
+  if (std::atomic_fetch_add(&have_crashed, 1) > 0) {
     SleepEx(INFINITE, false);
   }
 
@@ -500,7 +500,8 @@ bool StartHandlerProcess(
   BOOL rv;
   DWORD creation_flags;
   STARTUPINFOEX startup_info = {};
-  startup_info.StartupInfo.dwFlags = STARTF_USESTDHANDLES;
+  startup_info.StartupInfo.dwFlags =
+      STARTF_USESTDHANDLES | STARTF_FORCEOFFFEEDBACK;
   startup_info.StartupInfo.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
   startup_info.StartupInfo.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
   startup_info.StartupInfo.hStdError = GetStdHandle(STD_ERROR_HANDLE);

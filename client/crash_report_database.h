@@ -34,6 +34,7 @@
 namespace crashpad {
 
 class Settings;
+class SettingsReader;
 
 //! \brief An interface for managing a collection of crash report files and
 //!     metadata associated with the crash reports.
@@ -303,6 +304,16 @@ class CrashReportDatabase {
   static std::unique_ptr<CrashReportDatabase> InitializeWithoutCreating(
       const base::FilePath& path);
 
+  //! \brief Given a database path, return a read-only view of its settings.
+  //!
+  //! \param[in] path A path to the database. If the database does not exist, or
+  //!     the settings file does not exist, the returned reader will fail its
+  //!     read methods.
+  //!
+  //! \return A SettingsReader.
+  static std::unique_ptr<SettingsReader> GetSettingsReaderForDatabasePath(
+      const base::FilePath& path);
+
   //! \brief Returns the Settings object for this database.
   //!
   //! \return A weak pointer to the Settings object, which is owned by the
@@ -469,7 +480,7 @@ class CrashReportDatabase {
                                    const base::FilePath& crash_envelope) {}
 
  protected:
-  CrashReportDatabase() {}
+  CrashReportDatabase() = default;
 
   //! \brief The path to the database passed to Initialize.
   //!

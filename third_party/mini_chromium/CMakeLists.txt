@@ -64,7 +64,6 @@ mc_append_sources(
     strings/strcat_internal.h
     strings/string_number_conversions.cc
     strings/string_number_conversions.h
-    strings/string_piece.h
     strings/string_util.h
     strings/stringprintf.cc
     strings/stringprintf.h
