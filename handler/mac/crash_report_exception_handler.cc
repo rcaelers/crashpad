@@ -61,7 +61,7 @@ CrashReportExceptionHandler::CrashReportExceptionHandler(
       user_stream_data_sources_(user_stream_data_sources),
       crash_reporter_(crash_reporter),
       crash_envelope_(crash_envelope),
-      report_id_(report_id)
+      report_id_(report_id),
       user_hook_(user_hook) {}
 
 CrashReportExceptionHandler::~CrashReportExceptionHandler() {

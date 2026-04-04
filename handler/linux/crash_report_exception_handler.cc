@@ -107,11 +107,11 @@ CrashReportExceptionHandler::CrashReportExceptionHandler(
     bool write_minidump_to_database,
     bool write_minidump_to_log,
     const UserStreamDataSources* user_stream_data_sources,
-    UserHook* user_hook,
     bool wait_for_upload,
     const base::FilePath* crash_reporter,
     const base::FilePath* crash_envelope,
-    const UUID* report_id)
+    const UUID* report_id,
+    UserHook* user_hook)
     : database_(database),
       upload_thread_(upload_thread),
       process_annotations_(process_annotations),
@@ -119,11 +119,11 @@ CrashReportExceptionHandler::CrashReportExceptionHandler(
       write_minidump_to_database_(write_minidump_to_database),
       write_minidump_to_log_(write_minidump_to_log),
       user_stream_data_sources_(user_stream_data_sources),
-      user_hook_(user_hook),
       wait_for_upload_(wait_for_upload),
       crash_reporter_(crash_reporter),
       crash_envelope_(crash_envelope),
-      report_id_(report_id) {
+      report_id_(report_id),
+      user_hook_(user_hook) {
   DCHECK(write_minidump_to_database_ | write_minidump_to_log_);
 }
 
@@ -302,7 +302,7 @@ bool CrashReportExceptionHandler::WriteMinidumpToDatabase(
   bool consent = true;
 
   if (user_hook_ != nullptr) {
-    consent = user_hook_->requestUserConsent(*process_annotations_, *attachments_);
+    consent = user_hook_->requestUserConsent(*process_annotations_, attachments_);
     if (consent) {
       std::string user_text = user_hook_->getUserText();
       if (user_text.size() > 0) {
