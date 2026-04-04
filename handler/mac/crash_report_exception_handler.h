@@ -24,6 +24,7 @@
 #include "handler/crash_report_upload_thread.h"
 #include "handler/user_stream_data_source.h"
 #include "handler/user_hook.h"
+#include "util/misc/uuid.h"
 #include "util/mach/exc_server_variants.h"
 
 namespace crashpad {
@@ -63,6 +64,9 @@ class CrashReportExceptionHandler final
       const std::map<std::string, std::string>* process_annotations,
       const std::vector<base::FilePath>* attachments,
       const UserStreamDataSources* user_stream_data_sources,
+      const base::FilePath* crash_reporter,
+      const base::FilePath* crash_envelope,
+      const UUID* report_id,
       UserHook* user_hook);
 
   CrashReportExceptionHandler(const CrashReportExceptionHandler&) = delete;
@@ -97,6 +101,9 @@ class CrashReportExceptionHandler final
   const std::map<std::string, std::string>* process_annotations_;  // weak
   const std::vector<base::FilePath>* attachments_;  // weak
   const UserStreamDataSources* user_stream_data_sources_;  // weak
+  const base::FilePath* crash_reporter_;  // weak
+  const base::FilePath* crash_envelope_;  // weak
+  const UUID* report_id_;  // weak
   UserHook* user_hook_; // weak
 };
 

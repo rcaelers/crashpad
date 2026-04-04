@@ -22,6 +22,7 @@
 
 #include "handler/user_stream_data_source.h"
 #include "handler/user_hook.h"
+#include "util/misc/uuid.h"
 #include "util/win/exception_handler_server.h"
 
 namespace crashpad {
@@ -65,6 +66,10 @@ CrashReportExceptionHandler(
       const std::vector<base::FilePath>* attachments,
       const base::FilePath* screenshot,
       const UserStreamDataSources* user_stream_data_sources,
+      bool wait_for_upload,
+      const base::FilePath* crash_reporter,
+      const base::FilePath* crash_envelope,
+      const UUID* report_id,
       UserHook* user_hook);
 
   CrashReportExceptionHandler(const CrashReportExceptionHandler&) = delete;
@@ -82,13 +87,21 @@ CrashReportExceptionHandler(
       HANDLE process,
       WinVMAddress exception_information_address,
       WinVMAddress debug_critical_section_address) override;
+  void ExceptionHandlerServerAttachmentAdded(
+      const base::FilePath& attachment) override;
+  void ExceptionHandlerServerAttachmentRemoved(
+      const base::FilePath& attachment) override;
 
  private:
   CrashReportDatabase* database_;  // weak
   CrashReportUploadThread* upload_thread_;  // weak
   const std::map<std::string, std::string>* process_annotations_;  // weak
-  const std::vector<base::FilePath>* attachments_;  // weak
+  std::vector<base::FilePath> attachments_;
   const base::FilePath* screenshot_;  // weak
+  const bool wait_for_upload_;
+  const base::FilePath* crash_reporter_;  // weak
+  const base::FilePath* crash_envelope_;  // weak
+  const UUID* report_id_;  // weak
   const UserStreamDataSources* user_stream_data_sources_;  // weak
   UserHook* user_hook_; // weak
 };
