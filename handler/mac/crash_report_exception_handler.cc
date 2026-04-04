@@ -219,6 +219,8 @@ kern_return_t CrashReportExceptionHandler::CatchMachException(
             file_writer->Write(user_text.data(), user_text.size());
           }
         }
+      }
+    }
 
     bool has_crash_reporter = crash_reporter_ && !crash_reporter_->empty() &&
                               crash_envelope_ && !crash_envelope_->empty();
