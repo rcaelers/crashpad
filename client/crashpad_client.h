@@ -858,7 +858,7 @@ class CrashpadClient {
   static void SetCrashLoopBefore(uint64_t crash_loop_before_time);
 #endif
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || DOXYGEN
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || DOXYGEN
   //! \brief Adds a file to the list of files to be attached to the crash
   //!     report.
   //!
@@ -871,6 +871,14 @@ class CrashpadClient {
   //! \param[in] attachment The path to the file to be removed.
   void RemoveAttachment(const base::FilePath& attachment);
 #endif
+
+  //! \brief Requests that the handler retry pending report uploads.
+  //!
+  //! Wakes the handler's upload thread to immediately process pending reports
+  //! rather than waiting for its next periodic scan. Useful after state
+  //! changes (such as clearing UploadsPaused) that should take effect without
+  //! delay.
+  void RequestRetry();
 
  private:
 #if BUILDFLAG(IS_WIN) || DOXYGEN

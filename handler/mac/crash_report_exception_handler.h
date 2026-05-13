@@ -19,9 +19,11 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "client/crash_report_database.h"
 #include "handler/crash_report_upload_thread.h"
+#include "handler/mac/exception_handler_server.h"
 #include "handler/user_stream_data_source.h"
 #include "handler/user_hook.h"
 #include "util/misc/uuid.h"
@@ -32,7 +34,7 @@ namespace crashpad {
 //! \brief An exception handler that writes crash reports for exception messages
 //!     to a CrashReportDatabase.
 class CrashReportExceptionHandler final
-    : public UniversalMachExcServer::Interface {
+    : public ExceptionHandlerServer::Delegate {
  public:
   //! \brief Creates a new object that will store crash reports in \a database.
   //!
@@ -58,12 +60,15 @@ class CrashReportExceptionHandler final
   //!     minidump streams. `nullptr` if not required.
   //! \param[in] user_hook Hook that allows for interaction with the user before
   //!     submitting the crash report. `nullptr` if not required.
+  //! \param[in] wait_for_upload If `true`, upload crash reports synchronously
+  //!     before returning from the exception handler.
   CrashReportExceptionHandler(
       CrashReportDatabase* database,
       CrashReportUploadThread* upload_thread,
       const std::map<std::string, std::string>* process_annotations,
       const std::vector<base::FilePath>* attachments,
       const UserStreamDataSources* user_stream_data_sources,
+      bool wait_for_upload,
       const base::FilePath* crash_reporter,
       const base::FilePath* crash_envelope,
       const UUID* report_id,
@@ -95,12 +100,18 @@ class CrashReportExceptionHandler final
       const mach_msg_trailer_t* trailer,
       bool* destroy_complex_request) override;
 
+  // ExceptionHandlerServer::Delegate:
+  void RequestRetry() override;
+  void AddAttachment(const base::FilePath& attachment) override;
+  void RemoveAttachment(const base::FilePath& attachment) override;
+
  private:
   CrashReportDatabase* database_;  // weak
   CrashReportUploadThread* upload_thread_;  // weak
   const std::map<std::string, std::string>* process_annotations_;  // weak
-  const std::vector<base::FilePath>* attachments_;  // weak
+  std::vector<base::FilePath> attachments_;
   const UserStreamDataSources* user_stream_data_sources_;  // weak
+  bool wait_for_upload_;
   const base::FilePath* crash_reporter_;  // weak
   const base::FilePath* crash_envelope_;  // weak
   const UUID* report_id_;  // weak
