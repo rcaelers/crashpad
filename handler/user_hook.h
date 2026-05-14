@@ -109,7 +109,10 @@ class UserHook {
 
   //! \brief Report crash UUID
   //!
-  //! \param[in] uuid UUID of the created crash report.
+  //! \param[in] uuid UUID of the created crash report.  This UUID is embedded
+  //!     in the minidump, so the ingestion server will use it as the event ID.
+  //!     It is suitable for constructing a direct link in the crash-reporting
+  //!     web UI without waiting for the upload to complete.
   //!
   //! Called after \a requestUserConsent has been called to report back the UUID of
   //! the crash report.
