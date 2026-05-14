@@ -23,6 +23,7 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "client/settings.h"
+#include "handler/crash_summary.h"
 #include "handler/mac/file_limit_annotation.h"
 #include "minidump/minidump_file_writer.h"
 #include "minidump/minidump_user_extension_stream_data_source.h"
@@ -215,7 +216,8 @@ kern_return_t CrashReportExceptionHandler::CatchMachException(
     bool consent = true;
 
     if (user_hook_ != nullptr) {
-      consent = user_hook_->requestUserConsent(*process_annotations_, attachments_);
+      CrashSummary summary = BuildCrashSummary(process_snapshot);
+      consent = user_hook_->requestUserConsent(*process_annotations_, attachments_, summary);
       if (consent) {
         std::string user_text = user_hook_->getUserText();
         if (user_text.size() > 0) {

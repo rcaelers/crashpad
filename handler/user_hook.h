@@ -15,14 +15,55 @@
 #ifndef CRASHPAD_HANDLER_USER_HOOK_H_
 #define CRASHPAD_HANDLER_USER_HOOK_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <map>
+#include <utility>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "util/misc/uuid.h"
 
 namespace crashpad {
+
+//! \brief A summary of the crash extracted from the minidump snapshot.
+//!
+//! Passed to UserHook::requestUserConsent() so the user-facing dialog can
+//! display meaningful information about the crash without the caller having
+//! to parse the minidump file.
+struct CrashSummary {
+  //! \brief OS-specific exception/signal code (e.g. EXCEPTION_ACCESS_VIOLATION
+  //!     on Windows, signal number on Linux, EXC_* on macOS).
+  uint32_t exception_code = 0;
+
+  //! \brief Human-readable name for \a exception_code where known, otherwise
+  //!     an empty string.
+  std::string exception_name;
+
+  //! \brief Faulting instruction or memory address reported with the exception.
+  uint64_t exception_address = 0;
+
+  //! \brief Basename of the module that contains \a exception_address, or an
+  //!     empty string if the address does not fall within any loaded module.
+  std::string module_name;
+
+  //! \brief Byte offset of \a exception_address from the start of
+  //!     \a module_name.  Only meaningful when \a module_name is non-empty.
+  uint64_t module_offset = 0;
+
+  //! \brief Thread identifier of the thread that triggered the exception.
+  uint64_t crashing_thread_id = 0;
+
+  //! \brief Name of the crashing thread, or an empty string if unavailable.
+  std::string crashing_thread_name;
+
+  //! \brief Stack frames of the crashing thread.
+  //!
+  //! Each entry is a pair of {instruction_address, symbol_name}.  Only
+  //! populated when the client was built with CLIENT_STACKTRACES_ENABLED.
+  std::vector<std::pair<uint64_t, std::string>> stack_frames;
+};
 
 //! \brief Extensibility interface for embedders who wish to interact with the
 //! user before submitting the crash report
@@ -49,10 +90,14 @@ class UserHook {
   //! \param[in] attachments A vector of file paths that should be captured with
   //!     each report at the time of the crash.
   //!
+  //! \param[in] summary A summary of the crash extracted from the minidump
+  //!     snapshot.
+  //!
   //! \return \c true if the user consents to submitting a report,
   //!     \c false otherwise
   virtual bool requestUserConsent(const std::map<std::string, std::string> &annotations,
-                                  const std::vector<base::FilePath> &attachments) = 0;
+                                  const std::vector<base::FilePath> &attachments,
+                                  const CrashSummary &summary) = 0;
 
   //! \brief Retrieve user provided text
   //!

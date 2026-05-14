@@ -3,12 +3,15 @@ add_library(crashpad_handler_lib STATIC
     crash_report_upload_thread.h
     crash_report_upload_rate_limit.cc
     crash_report_upload_rate_limit.h
+    crash_summary.cc
+    crash_summary.h
     handler_main.cc
     handler_main.h
     minidump_to_upload_parameters.cc
     minidump_to_upload_parameters.h
     prune_crash_reports_thread.cc
     prune_crash_reports_thread.h
+    user_hook.h
     user_stream_data_source.cc
     user_stream_data_source.h
 )

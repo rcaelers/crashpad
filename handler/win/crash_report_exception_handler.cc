@@ -21,6 +21,7 @@
 #include "client/crash_report_database.h"
 #include "client/settings.h"
 #include "handler/crash_report_upload_thread.h"
+#include "handler/crash_summary.h"
 #include "minidump/minidump_file_writer.h"
 #include "minidump/minidump_user_extension_stream_data_source.h"
 #include "snapshot/win/process_snapshot_win.h"
@@ -148,7 +149,8 @@ unsigned int CrashReportExceptionHandler::ExceptionHandlerServerException(
     bool consent = true;
 
     if (user_hook_ != nullptr) {
-      consent = user_hook_->requestUserConsent(*process_annotations_, attachments_);
+      CrashSummary summary = BuildCrashSummary(process_snapshot);
+      consent = user_hook_->requestUserConsent(*process_annotations_, attachments_, summary);
       if (consent) {
         std::string user_text = user_hook_->getUserText();
         if (user_text.size() > 0) {

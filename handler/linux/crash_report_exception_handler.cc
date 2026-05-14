@@ -20,6 +20,7 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "client/settings.h"
+#include "handler/crash_summary.h"
 #include "handler/linux/capture_snapshot.h"
 #include "minidump/minidump_file_writer.h"
 #include "snapshot/linux/process_snapshot_linux.h"
@@ -308,7 +309,10 @@ bool CrashReportExceptionHandler::WriteMinidumpToDatabase(
   bool consent = true;
 
   if (user_hook_ != nullptr) {
-    consent = user_hook_->requestUserConsent(*process_annotations_, attachments_);
+    CrashSummary summary = BuildCrashSummary(
+        sanitized_snapshot ? static_cast<const ProcessSnapshot&>(*sanitized_snapshot)
+                           : static_cast<const ProcessSnapshot&>(*process_snapshot));
+    consent = user_hook_->requestUserConsent(*process_annotations_, attachments_, summary);
     if (consent) {
       std::string user_text = user_hook_->getUserText();
       if (user_text.size() > 0) {
