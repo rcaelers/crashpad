@@ -215,7 +215,7 @@ kern_return_t CrashReportExceptionHandler::CatchMachException(
     bool consent = true;
 
     if (user_hook_ != nullptr) {
-      consent = user_hook_->requestUserConsent(*process_annotations_, *attachments_);
+      consent = user_hook_->requestUserConsent(*process_annotations_, attachments_);
       if (consent) {
         std::string user_text = user_hook_->getUserText();
         if (user_text.size() > 0) {
