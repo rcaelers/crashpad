@@ -87,8 +87,12 @@ class UserHook {
   //!     To interoperate with Breakpad servers, the recommended practice is to
   //!     specify values for the `"prod"` and `"ver"` keys as process
   //!     annotations.
-  //! \param[in] attachments A vector of file paths that should be captured with
-  //!     each report at the time of the crash.
+  //! \param[in,out] attachments A vector of file paths to be captured with
+  //!     each report at the time of the crash.  The hook may append additional
+  //!     paths (e.g. application log or config files) and may remove paths for
+  //!     attachments that the user has chosen to exclude.  Only the paths that
+  //!     remain in the vector after this call returns will be written to the
+  //!     crash report.
   //!
   //! \param[in] summary A summary of the crash extracted from the minidump
   //!     snapshot.
@@ -96,7 +100,7 @@ class UserHook {
   //! \return \c true if the user consents to submitting a report,
   //!     \c false otherwise
   virtual bool requestUserConsent(const std::map<std::string, std::string> &annotations,
-                                  const std::vector<base::FilePath> &attachments,
+                                  std::vector<base::FilePath> &attachments,
                                   const CrashSummary &summary) = 0;
 
   //! \brief Retrieve user provided text

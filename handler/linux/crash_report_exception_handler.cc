@@ -287,6 +287,15 @@ bool CrashReportExceptionHandler::WriteMinidumpToDatabase(
     }
   }
 
+  bool consent = true;
+
+  if (user_hook_ != nullptr) {
+    CrashSummary summary = BuildCrashSummary(
+        sanitized_snapshot ? static_cast<const ProcessSnapshot&>(*sanitized_snapshot)
+                           : static_cast<const ProcessSnapshot&>(*process_snapshot));
+    consent = user_hook_->requestUserConsent(*process_annotations_, attachments_, summary);
+  }
+
   for (const auto& attachment : attachments_) {
     FileReader file_reader;
     if (!file_reader.Open(attachment)) {
@@ -306,22 +315,14 @@ bool CrashReportExceptionHandler::WriteMinidumpToDatabase(
     CopyFileContent(&file_reader, file_writer);
   }
 
-  bool consent = true;
-
-  if (user_hook_ != nullptr) {
-    CrashSummary summary = BuildCrashSummary(
-        sanitized_snapshot ? static_cast<const ProcessSnapshot&>(*sanitized_snapshot)
-                           : static_cast<const ProcessSnapshot&>(*process_snapshot));
-    consent = user_hook_->requestUserConsent(*process_annotations_, attachments_, summary);
-    if (consent) {
-      std::string user_text = user_hook_->getUserText();
-      if (user_text.size() > 0) {
-        FileWriter* file_writer = new_report->AddAttachment("user-text");
-        if (file_writer == nullptr) {
-          LOG(ERROR) << "user text couldn't be created, skipping";
-        } else {
-          file_writer->Write(user_text.data(), user_text.size());
-        }
+  if (user_hook_ != nullptr && consent) {
+    std::string user_text = user_hook_->getUserText();
+    if (user_text.size() > 0) {
+      FileWriter* file_writer = new_report->AddAttachment("user-text");
+      if (file_writer == nullptr) {
+        LOG(ERROR) << "user text couldn't be created, skipping";
+      } else {
+        file_writer->Write(user_text.data(), user_text.size());
       }
     }
   }
